@@ -1,0 +1,22 @@
+{
+    "name": "rubenrubiob/simple-api-caller-bundle",
+    "description": "A simple API caller for Symfony framework",
+    "keywords": [ "API", "caller", "simple", "json", "bundle" ],
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.3.2",
+        "nategood/httpful": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "rubenrubiob\\SimpleApiCallerBundle\\": ""
+        }
+    },
+    "authors": [
+        {
+            "name": "Rubén Rubio Barrera",
+            "email": "ruben.rubio.barrera@gmail.com"
+        }
+    ]
+}
