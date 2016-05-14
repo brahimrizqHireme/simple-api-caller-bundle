@@ -97,6 +97,14 @@ class SimpleApiCallerServiceTest extends WebTestCase
             'title'     => 'foo',
             'body'      => 'bar',
             'userId'    => 1,
+            'address'   => array(
+                'country'       => 'foo',
+                'postal_code'   => 'bar',
+                'numbers'       => array(
+                    'home'          => '600',
+                    'work'          => '700',
+                ),
+            ),
             'file'      => new UploadedFile($testFileName, 'test.txt', null, null, null, true),
         );
 

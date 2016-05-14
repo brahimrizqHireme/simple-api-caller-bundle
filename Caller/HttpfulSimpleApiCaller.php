@@ -8,6 +8,8 @@ use Httpful\Handlers\JsonHandler;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+use rubenrubiob\SimpleApiCallerBundle\Util\ArrayUtil;
+
 /**
  * Class HttpfulApiCaller
  * @package rubenrubiob\ApiCallerBundle\Caller
@@ -51,6 +53,36 @@ class HttpfulSimpleApiCaller implements SimpleApiCallerInterface
     }
 
     /**
+     * Note: If data is a multidimensional array, we have to flatten it before posting it, i.e., an array like:
+     *
+     * [
+     *      key1: value1
+     *      key2: [
+     *          key2.1: value2.1
+     *          key2.2: value2.2
+     *      ]
+     *      key3: [
+     *          key3.1: [
+     *              key3.1.1: value3.1.1
+     *              key3.1.2: value3.1.2
+     *          ]
+     *          key3.2: value3.2
+     *      ]
+     * ]
+     *
+     * must become
+     *
+     * [
+     *      key1: value1
+     *      key2[key2.1]: value2.1
+     *      key2[key2.2]: value2.2
+     *      key3[key3.1][key3.1.1]: value3.1.1
+     *      key3[key3.1][key3.1.2]: value3.1.2
+     *      key3[key3.2]: value3.2
+     * ]
+     *
+     * Otherwise, curl is not able to perform the request and throws an error
+     *
      * @param string $url
      * @param array  $data
      * @param array  $headers
@@ -63,15 +95,20 @@ class HttpfulSimpleApiCaller implements SimpleApiCallerInterface
         // Set template
         $this->setTemplate();
 
+        // Flatten array if it is multidimensional
+        if (ArrayUtil::isMultidimensionalArray($data)) {
+            $data = ArrayUtil::flattenMultidimensionalArray($data);
+        }
+
+        // We have to post files and data separately
         $postData = array();
         $files = array();
+
         foreach ($data as $key => $value) {
-            if (!is_array($value)) {
-                if ($value instanceof UploadedFile) {
-                    $files[$key] = $this->saveTemporaryFile($value);
-                } else {
-                    $postData[$key] = $value;
-                }
+            if ($value instanceof UploadedFile) {
+                $files[$key] = $this->saveTemporaryFile($value);
+            } else {
+                $postData[$key] = $value;
             }
         }
 
