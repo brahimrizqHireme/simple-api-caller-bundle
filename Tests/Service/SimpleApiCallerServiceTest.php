@@ -23,6 +23,16 @@ class SimpleApiCallerServiceTest extends WebTestCase
     private $postTestUrl;
 
     /**
+     * @var string
+     */
+    private $putTestUrl;
+
+    /**
+     * @var string
+     */
+    private $patchTestUrl;
+
+    /**
      * @var HttpfulSimpleApiCaller
      */
     private $simpleApiCallerService;
@@ -41,10 +51,12 @@ class SimpleApiCallerServiceTest extends WebTestCase
         $kernel = static::createKernel();
         $kernel->boot();
 
-        $this->simpleApiCallerService = $kernel->getContainer()->get('rubenrubiob_simple_api_caller');
+        $this->simpleApiCallerService = $kernel->getContainer()->get('rrb.simple_api_caller');
         $this->cacheDir = $kernel->getContainer()->getParameter('kernel.cache_dir');
         $this->getTestUrl = 'http://jsonplaceholder.typicode.com/posts';
         $this->postTestUrl = 'http://jsonplaceholder.typicode.com/posts';
+        $this->putTestUrl = 'http://jsonplaceholder.typicode.com/posts/1';
+        $this->patchTestUrl = 'http://jsonplaceholder.typicode.com/posts/1';
     }
 
     /**
@@ -150,6 +162,123 @@ class SimpleApiCallerServiceTest extends WebTestCase
 
         // Test data values
         $this->assertEquals(101, $response['id']);
+        $this->assertEquals($data['title'], $response['title']);
+        $this->assertEquals($data['body'], $response['body']);
+        $this->assertEquals($data['userId'], $response['userId']);
+    }
+
+    /**
+     * Test put method from service
+     */
+    public function testPut()
+    {
+        // Create files to send
+        $testFileName = sprintf('%s/test.txt', $this->cacheDir);
+        file_put_contents($testFileName, 'foo');
+
+        $testFileName2 = sprintf('%s/test2.txt', $this->cacheDir);
+        file_put_contents($testFileName2, 'foo2');
+
+        // Prepare data
+        $data = array(
+            'title'     => 'foo',
+            'body'      => 'bar',
+            'userId'    => 1,
+            'address'   => array(
+                'country'       => 'foo',
+                'postal_code'   => 'bar',
+                'numbers'       => array(
+                    'home'          => '600',
+                    'work'          => '700',
+                    'file'          => new UploadedFile($testFileName2, 'test2.txt', null, null, null, true),
+                ),
+            ),
+            'file'      => new UploadedFile($testFileName, 'test.txt', null, null, null, true),
+        );
+
+
+        $headers  = array(
+            'test-headers'      => true,
+        );
+
+        // Perform the call
+        $response = $this->simpleApiCallerService->put($this->putTestUrl, $data, $headers);
+
+        // Test that response is an array
+        $this->assertEquals(true, is_array($response));
+
+        // Test data structure
+        $this->assertEquals(true, array_key_exists('id', $response));
+        $this->assertEquals(1, $response['id']);
+    }
+
+    /**
+     * Test patch method from service
+     */
+    public function testPatch()
+    {
+        // Create files to send
+        $testFileName = sprintf('%s/test.txt', $this->cacheDir);
+        file_put_contents($testFileName, 'foo');
+
+        $testFileName2 = sprintf('%s/test2.txt', $this->cacheDir);
+        file_put_contents($testFileName2, 'foo2');
+
+        // Prepare data
+        $data = array(
+            'title'     => 'foo',
+            'body'      => 'bar',
+            'userId'    => 1,
+            'address'   => array(
+                'country'       => 'foo',
+                'postal_code'   => 'bar',
+                'numbers'       => array(
+                    'home'          => '600',
+                    'work'          => '700',
+                    'file'          => new UploadedFile($testFileName2, 'test2.txt', null, null, null, true),
+                ),
+            ),
+            'file'      => new UploadedFile($testFileName, 'test.txt', null, null, null, true),
+        );
+
+
+        $headers  = array(
+            'test-headers'      => true,
+        );
+
+        // Perform the call
+        $response = $this->simpleApiCallerService->patch($this->patchTestUrl, $data, $headers);
+
+        // Test that response is an array
+        $this->assertEquals(true, is_array($response));
+
+        // Test data structure
+        $this->assertEquals(true, array_key_exists('id', $response));
+        $this->assertEquals(1, $response['id']);
+
+
+
+        // Test API only returns the id when sending a file, so we perform another request in order to test
+        $data = array(
+            'title'     => 'foo',
+            'body'      => 'bar',
+            'userId'    => 1,
+        );
+
+        // Perform the call
+        $response = $this->simpleApiCallerService->patch($this->patchTestUrl, $data, $headers);
+
+        // Test that response is an array
+        $this->assertEquals(true, is_array($response));
+
+        // Test data structure
+        $this->assertEquals(true, array_key_exists('id', $response));
+        $this->assertEquals(true, array_key_exists('title', $response));
+        $this->assertEquals(true, array_key_exists('body', $response));
+        $this->assertEquals(true, array_key_exists('userId', $response));
+
+        // Test data values
+        $this->assertEquals(1, $response['id']);
         $this->assertEquals($data['title'], $response['title']);
         $this->assertEquals($data['body'], $response['body']);
         $this->assertEquals($data['userId'], $response['userId']);

@@ -1,6 +1,7 @@
 <?php
 namespace rubenrubiob\SimpleApiCallerBundle\Caller;
 
+use Httpful\Http;
 use Httpful\Httpful;
 use Httpful\Mime;
 use Httpful\Request;
@@ -46,43 +47,13 @@ class HttpfulSimpleApiCaller implements SimpleApiCallerInterface
         // Set headers
         $this->setHeaders($headers);
         // Set template
-        $this->setTemplate();
+        $this->setTemplate('get');
 
         // Perform the request
         $this->data = Request::get($url)->send();
     }
 
     /**
-     * Note: If data is a multidimensional array, we have to flatten it before posting it, i.e., an array like:
-     *
-     * [
-     *      key1: value1
-     *      key2: [
-     *          key2.1: value2.1
-     *          key2.2: value2.2
-     *      ]
-     *      key3: [
-     *          key3.1: [
-     *              key3.1.1: value3.1.1
-     *              key3.1.2: value3.1.2
-     *          ]
-     *          key3.2: value3.2
-     *      ]
-     * ]
-     *
-     * must become
-     *
-     * [
-     *      key1: value1
-     *      key2[key2.1]: value2.1
-     *      key2[key2.2]: value2.2
-     *      key3[key3.1][key3.1.1]: value3.1.1
-     *      key3[key3.1][key3.1.2]: value3.1.2
-     *      key3[key3.2]: value3.2
-     * ]
-     *
-     * Otherwise, curl is not able to perform the request and throws an error
-     *
      * @param string $url
      * @param array  $data
      * @param array  $headers
@@ -90,50 +61,29 @@ class HttpfulSimpleApiCaller implements SimpleApiCallerInterface
      */
     public function post($url = '', $data = array(), $headers = array())
     {
-        // Set headers
-        $this->setHeaders($headers);
-        // Set template
-        $this->setTemplate();
+        $this->sendData('post', $url, $data, $headers);
+    }
 
-        // Flatten array if it is multidimensional
-        if (ArrayUtil::isMultidimensionalArray($data)) {
-            $data = ArrayUtil::flattenMultidimensionalArray($data);
-        }
+    /**
+     * @param string $url
+     * @param array  $data
+     * @param array  $headers
+     * @return mixed
+     */
+    public function put($url = '', $data = array(), $headers = array())
+    {
+        $this->sendData('put', $url, $data, $headers);
+    }
 
-        // We have to post files and data separately
-        $postData = array();
-        $files = array();
-
-        foreach ($data as $key => $value) {
-            if ($value instanceof UploadedFile) {
-                $files[$key] = $this->saveTemporaryFile($value);
-            } else {
-                $postData[$key] = $value;
-            }
-        }
-
-        // Prepare the request
-        $request = Request::post($url);
-
-        // Set fields data
-        if (is_array($postData) && !empty($postData)) {
-            $request->body($postData);
-        }
-
-        // Set files data
-        if (is_array($files) && !empty($files)) {
-            $request->attach($files);
-        }
-
-        // Perform the request
-        $this->data = $request->send();
-
-        // Remove temporary files
-        if (is_array($files) && !empty($files)) {
-            foreach ($files as $file) {
-                $this->removeTemporaryFile($file);
-            }
-        }
+    /**
+     * @param string $url
+     * @param array  $data
+     * @param array  $headers
+     * @return mixed
+     */
+    public function patch($url = '', $data = array(), $headers = array())
+    {
+        $this->sendData('patch', $url, $data, $headers);
     }
 
     /**
@@ -175,9 +125,94 @@ class HttpfulSimpleApiCaller implements SimpleApiCallerInterface
     }
 
     /**
+     * Note: If data is a multidimensional array, we have to flatten it before posting it, i.e., an array like:
+     *
+     * [
+     *      key1: value1
+     *      key2: [
+     *          key2.1: value2.1
+     *          key2.2: value2.2
+     *      ]
+     *      key3: [
+     *          key3.1: [
+     *              key3.1.1: value3.1.1
+     *              key3.1.2: value3.1.2
+     *          ]
+     *          key3.2: value3.2
+     *      ]
+     * ]
+     *
+     * must become
+     *
+     * [
+     *      key1: value1
+     *      key2[key2.1]: value2.1
+     *      key2[key2.2]: value2.2
+     *      key3[key3.1][key3.1.1]: value3.1.1
+     *      key3[key3.1][key3.1.2]: value3.1.2
+     *      key3[key3.2]: value3.2
+     * ]
+     *
+     * Otherwise, curl is not able to perform the request and throws an error
+     *
+     * @param string $method
+     * @param string $url
+     * @param array  $data
+     * @param array  $headers
+     * @return mixed
+     */
+    private function sendData($method, $url, $data, $headers)
+    {
+        // Set headers
+        $this->setHeaders($headers);
+        // Set template
+        $this->setTemplate($method);
+
+        // Flatten array if it is multidimensional
+        if (ArrayUtil::isMultidimensionalArray($data)) {
+            $data = ArrayUtil::flattenMultidimensionalArray($data);
+        }
+
+        // We have to post files and data separately
+        $postData = array();
+        $files = array();
+
+        foreach ($data as $key => $value) {
+            if ($value instanceof UploadedFile) {
+                $files[$key] = $this->saveTemporaryFile($value);
+            } else {
+                $postData[$key] = $value;
+            }
+        }
+
+        // Prepare the request
+        $request = Request::$method($url);
+
+        // Set fields data
+        if (is_array($postData) && !empty($postData)) {
+            $request->body($postData);
+        }
+
+        // Set files data
+        if (is_array($files) && !empty($files)) {
+            $request->attach($files);
+        }
+
+        // Perform the request
+        $this->data = $request->send();
+
+        // Remove temporary files
+        if (is_array($files) && !empty($files)) {
+            foreach ($files as $file) {
+                $this->removeTemporaryFile($file);
+            }
+        }
+    }
+
+    /**
      * Method to set template of request
      */
-    private function setTemplate()
+    private function setTemplate($method)
     {
         // Register a new mime type handler, so the response is decoded as an array.
         // Extracted from: http://stackoverflow.com/a/22597037
@@ -186,8 +221,9 @@ class HttpfulSimpleApiCaller implements SimpleApiCallerInterface
 
         // Create template
         $template = Request::init()
+            ->method($this->getMethod($method))
             ->expectsJson()
-            ->sendsType(Mime::FORM);
+            ->sendsType(Mime::FORM)
         ;
 
         // Add custom headers to request
@@ -222,5 +258,32 @@ class HttpfulSimpleApiCaller implements SimpleApiCallerInterface
     private function removeTemporaryFile($path)
     {
         unlink($path);
+    }
+
+    /**
+     * @param string $method
+     * @return null|string
+     */
+    private function getMethod($method)
+    {
+        $httpMethod = null;
+
+        switch ($method) {
+            case 'get':
+                $httpMethod = Http::GET;
+                break;
+            case 'put':
+                $httpMethod = Http::PUT;
+                break;
+            case 'patch':
+                $httpMethod = Http::PATCH;
+                break;
+            case 'post':
+            default:
+                $httpMethod = Http::POST;
+
+        }
+
+        return $httpMethod;
     }
 }

@@ -69,7 +69,7 @@ $headers = array(
     'header-2-name'     => 'header-2-value',
 );
 
-$response = $this->get('rubenrubiob_simple_api_caller')->get($url, $headers);
+$response = $this->get('rrb.simple_api_caller')->get($url, $headers);
 ```
 
 POST requests
@@ -84,11 +84,65 @@ $url = 'http://your/complete/url';
 $data = array(
     'field-1'       => 'field-1-value',
     'field-2'       => new UploadedFile('/path/to/file', 'file-name'),
+    'field-3'       => array(
+        'subfield-3.1'   => 'subvalue-3.1',
+        'subfield-3.2'   => 'subvalue-3.2',
+    ),
 );
 $headers = array(
     'header-1-name'     => 'header-1-value',
     'header-2-name'     => 'header-2-value',
 );
 
-$response = $this->get('rubenrubiob_simple_api_caller')->post($url, $data, $headers);
+$response = $this->get('rrb.simple_api_caller')->post($url, $data, $headers);
+```
+
+PUT requests
+------------
+
+```php
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
+// ...
+
+$url = 'http://your/complete/url';
+$data = array(
+    'field-1'       => 'field-1-value',
+    'field-2'       => new UploadedFile('/path/to/file', 'file-name'),
+    'field-3'       => array(
+        'subfield-3.1'   => 'subvalue-3.1',
+        'subfield-3.2'   => 'subvalue-3.2',
+    ),
+);
+$headers = array(
+    'header-1-name'     => 'header-1-value',
+    'header-2-name'     => 'header-2-value',
+);
+
+$response = $this->get('rrb.simple_api_caller')->put($url, $data, $headers);
+```
+
+PATCH requests
+--------------
+
+```php
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
+// ...
+
+$url = 'http://your/complete/url';
+$data = array(
+    'field-1'       => 'field-1-value',
+    'field-2'       => new UploadedFile('/path/to/file', 'file-name'),
+    'field-3'       => array(
+        'subfield-3.1'   => 'subvalue-3.1',
+        'subfield-3.2'   => 'subvalue-3.2',
+    ),
+);
+$headers = array(
+    'header-1-name'     => 'header-1-value',
+    'header-2-name'     => 'header-2-value',
+);
+
+$response = $this->get('rrb.simple_api_caller')->patch($url, $data, $headers);
 ```
