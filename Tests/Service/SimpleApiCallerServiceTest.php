@@ -88,9 +88,12 @@ class SimpleApiCallerServiceTest extends WebTestCase
      */
     public function testPost()
     {
-        // Create file to send
+        // Create files to send
         $testFileName = sprintf('%s/test.txt', $this->cacheDir);
         file_put_contents($testFileName, 'foo');
+
+        $testFileName2 = sprintf('%s/test2.txt', $this->cacheDir);
+        file_put_contents($testFileName2, 'foo2');
 
         // Prepare data
         $data = array(
@@ -103,6 +106,7 @@ class SimpleApiCallerServiceTest extends WebTestCase
                 'numbers'       => array(
                     'home'          => '600',
                     'work'          => '700',
+                    'file'          => new UploadedFile($testFileName2, 'test2.txt', null, null, null, true),
                 ),
             ),
             'file'      => new UploadedFile($testFileName, 'test.txt', null, null, null, true),
