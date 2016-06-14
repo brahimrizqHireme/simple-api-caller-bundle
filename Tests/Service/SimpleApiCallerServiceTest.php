@@ -6,6 +6,8 @@ use rubenrubiob\SimpleApiCallerBundle\Caller\HttpfulSimpleApiCaller;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+use Httpful\Response;
+
 /**
  * Class SimpleApiCallerServiceTest
  * @package rubenrubiob\SimpleApiCallerBundle\Tests\Service
@@ -282,5 +284,17 @@ class SimpleApiCallerServiceTest extends WebTestCase
         $this->assertEquals($data['title'], $response['title']);
         $this->assertEquals($data['body'], $response['body']);
         $this->assertEquals($data['userId'], $response['userId']);
+    }
+
+    /**
+     *
+     */
+    public function testExpects()
+    {
+        // Perform the call
+        $response = $this->simpleApiCallerService->expects('xml')->get('http://www.w3schools.com/xml/note.xml');
+
+        // Check values
+        $this->assertEquals('SimpleXMLElement', get_class($response));
     }
 }

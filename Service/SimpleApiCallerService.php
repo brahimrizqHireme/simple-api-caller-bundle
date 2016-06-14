@@ -35,4 +35,12 @@ class SimpleApiCallerService
 
         return $this->apiCaller->getData();
     }
+
+    
+    public function expects($mimeType)
+    {
+        $this->apiCaller->setMimeType($mimeType);
+
+        return $this;
+    }
 }

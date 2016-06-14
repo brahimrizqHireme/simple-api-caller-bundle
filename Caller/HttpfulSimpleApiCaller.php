@@ -33,6 +33,11 @@ class HttpfulSimpleApiCaller implements SimpleApiCallerInterface
     protected $data = null;
 
     /**
+     * @var string
+     */
+    protected $mimeType = 'json';
+
+    /**
      * @var null|array
      */
     protected $headers;
@@ -93,6 +98,15 @@ class HttpfulSimpleApiCaller implements SimpleApiCallerInterface
     public function setHeaders($headers = array())
     {
         $this->headers = $headers;
+    }
+
+    /**
+     * @param string $mimeType
+     * @return mixed
+     */
+    public function setMimeType($mimeType)
+    {
+        $this->mimeType = $mimeType;
     }
 
     /**
@@ -214,15 +228,17 @@ class HttpfulSimpleApiCaller implements SimpleApiCallerInterface
      */
     private function setTemplate($method)
     {
-        // Register a new mime type handler, so the response is decoded as an array.
+        // Register a new mime type handler if we expect a Json, so the response is decoded as an array.
         // Extracted from: http://stackoverflow.com/a/22597037
-        $jsonHandler = new JsonHandler(array('decode_as_array' => true));
-        Httpful::register('application/json', $jsonHandler);
+        if ($this->mimeType == 'json') {
+            $jsonHandler = new JsonHandler(array('decode_as_array' => true));
+            Httpful::register('application/json', $jsonHandler);
+        }
 
         // Create template
         $template = Request::init()
             ->method($this->getMethod($method))
-            ->expectsJson()
+            ->expects($this->mimeType)
             ->sendsType(Mime::FORM)
         ;
 

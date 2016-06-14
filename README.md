@@ -4,9 +4,6 @@ requests to an url, and parses the JSON response to a PHP array.
 It supports sending custom headers, as well as attached files
 using the Symfony `FileUploaded` class.
 
-Right now, it only supports GET and POST requests, and the response
-must be a JSON; otherwise, the service will throw an error.
-
 Installation
 ============
 
@@ -146,3 +143,22 @@ $headers = array(
 
 $response = $this->get('rrb.simple_api_caller')->patch($url, $data, $headers);
 ```
+
+Expects
+-------
+
+By default, the service expects a JSON response and parses it as an array. But
+it is possible to specify the MIME type to expect:
+
+```php
+$url = 'http://your/complete/url';
+$headers = array(
+    'header-1-name'     => 'header-1-value',
+    'header-2-name'     => 'header-2-value',
+);
+
+$response = $this->get('rrb.simple_api_caller')->expects('html')->get($url, $headers);
+```
+
+The MIME types supported are the ones of [Httpful](http://phphttpclient.com/), so check
+it for further information.
