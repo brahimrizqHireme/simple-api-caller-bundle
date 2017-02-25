@@ -6,6 +6,11 @@ use rubenrubiob\SimpleApiCallerBundle\Caller\HttpfulSimpleApiCaller;
 /**
  * Class SimpleApiCallerService
  * @package rubenrubiob\SimpleApiCallerBundle\Service
+ *
+ * @method array get($url, $headers)
+ * @method array post($url, $data, $headers)
+ * @method array put($url, $data, $headers)
+ * @method array patch($url, $data, $headers)
  */
 class SimpleApiCallerService
 {
@@ -36,7 +41,10 @@ class SimpleApiCallerService
         return $this->apiCaller->getData();
     }
 
-    
+    /**
+     * @param string $mimeType
+     * @return $this
+     */
     public function expects($mimeType)
     {
         $this->apiCaller->setMimeType($mimeType);
