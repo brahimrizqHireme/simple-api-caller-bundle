@@ -3,9 +3,9 @@ services:
     rubenrubiob_simple_api_caller:
         class: rubenrubiob\SimpleApiCallerBundle\Service\SimpleApiCallerService
         arguments:
-            cacheDir: "%kernel.cache_dir%"
+            - "%kernel.cache_dir%"
 
     rrb.simple_api_caller:
         class: rubenrubiob\SimpleApiCallerBundle\Service\SimpleApiCallerService
         arguments:
-            cacheDir: "%kernel.cache_dir%"
+            - "%kernel.cache_dir%"
